@@ -15,7 +15,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import ognl.ExpressionSyntaxException;
+import ognl.MethodFailedException;
 import ognl.OgnlException;
+import ognl.ParseException;
 
 
 /**
@@ -652,4 +654,154 @@ public class TestExpressionCompiler extends TestCase
         }
     }
 
+    /**
+     * Test if OGNL can parse an expression involving a package with "or" in it, and
+     * successfully call a static method of a class in that package.
+     * 
+     * @throws Throwable 
+     */
+    public void test_package_with_or_in_name() throws Throwable
+    {
+        try {
+            Node expr = (Node) Ognl.parseExpression("@test.or.BasicTest@generateId()");
+            Object obj = expr.getValue(_context, null);
+            assertNotNull("Expression result is null ?", obj);
+        } catch (Exception ex) {
+            fail("OGNL was unable to parse package with 'or' in its name, but newer versions should succeed");
+        }
+    }
+
+
+    /**
+     * Test if OGNL can parse an expression involving a package with "or" in it, and
+     * successfully compare something using instanceof.
+     * 
+     * @throws Throwable 
+     */
+    public void test_package_with_or_in_name_instanceof() throws Throwable
+    {
+        try {
+            Node expr = (Node) Ognl.parseExpression("null instanceof test.or.BasicTest");
+            Object obj = expr.getValue(_context, null);
+            assertNotNull("Expression result is null ?", obj);
+        } catch (Exception ex) {
+            fail("OGNL was unable to parse package with 'or' in its name, but newer versions should succeed");
+        }
+    }
+
+    /**
+     * Test if OGNL can parse an expression involving a package with "and" in it.
+     * 
+     * @throws Throwable 
+     */
+    public void test_nonexistent_package_with_and_in_name() throws Throwable
+    {
+        try {
+            Node expr = (Node) Ognl.parseExpression("@test.and.BasicTest@generateId()");
+            Object obj = expr.getValue(_context, null);
+            fail("Was able to get a value for a package and class that does not exist ?");
+        } catch (MethodFailedException mfe) {
+            // Test would cause an ExpressionSyntaxException (cause ParseException) with older OGNL versions.
+            // With newer OGNL versions it will cause a MethodFailedException (cause ClassNotFoundException).
+            // The MethodFailedException is the expected/desired outcome now, as it demonstrates that package names that are also
+            // OGNL tokens can be parsed successfully to find classes.
+            assertTrue("Cause was not a ClassNotFoundException ?", mfe.getCause() instanceof ClassNotFoundException);
+        }
+    }
+
+    /**
+     * Test if OGNL can parse an expression involving a package with "and" in it.
+     * 
+     * @throws Throwable 
+     */
+    public void test_nonexistent_package_with_and_in_name_instanceof() throws Throwable
+    {
+        try {
+            Node expr = (Node) Ognl.parseExpression("null instanceof test.and.BasicTest");
+            Object obj = expr.getValue(_context, null);
+            fail("Was able to get a value for a package and class that does not exist ?");
+        } catch (OgnlException oex) {
+            // Test would cause an ExpressionSyntaxException (cause ParseException) with older OGNL versions.
+            // With newer OGNL versions it will cause a OgnlException (cause ClassNotFoundException).
+            // The OgnlException is the expected/desired outcome now, as it demonstrates that package names that are also
+            // OGNL tokens can be parsed successfully to find classes.
+            assertTrue("Cause was not a ClassNotFoundException ?", oex.getCause() instanceof ClassNotFoundException);
+        }
+    }
+
+    /**
+     * Test if OGNL can parse an expression involving a package with "and" in it.
+     * 
+     * @throws Throwable 
+     */
+    public void test_nonexistent_package_with_and_in_name_twice() throws Throwable
+    {
+        try {
+            Node expr = (Node) Ognl.parseExpression("@test.and.and.BasicTest@generateId()");
+            Object obj = expr.getValue(_context, null);
+            fail("Was able to get a value for a package and class that does not exist ?");
+        } catch (MethodFailedException mfe) {
+            // Test would cause an ExpressionSyntaxException (cause ParseException) with older OGNL versions.
+            // With newer OGNL versions it will cause a MethodFailedException(cause ClassNotFoundException).
+            // The MethodFailedException is the expected/desired outcome now, as it demonstrates that package names that are also
+            // OGNL tokens can be parsed successfully to find classes.
+            assertTrue("Cause was not a ClassNotFoundException ?", mfe.getCause() instanceof ClassNotFoundException);
+        }
+    }
+
+    /**
+     * Test if OGNL can parse an expression involving a package with "and" in it.
+     * 
+     * @throws Throwable 
+     */
+    public void test_nonexistent_package_with_and_in_name_multiple_times_separated() throws Throwable
+    {
+        try {
+            Node expr = (Node) Ognl.parseExpression("@test.and.some.and.other.BasicTest@generateId()");
+            Object obj = expr.getValue(_context, null);
+            fail("Was able to get a value for a package and class that does not exist ?");
+        } catch (MethodFailedException mfe) {
+            // Test would cause an ExpressionSyntaxException (cause ParseException) with older OGNL versions.
+            // With newer OGNL versions it will cause a MethodFailedException(cause ClassNotFoundException).
+            // The MethodFailedException is the expected/desired outcome now, as it demonstrates that package names that are also
+            // OGNL tokens can be parsed successfully to find classes.
+            assertTrue("Cause was not a ClassNotFoundException ?", mfe.getCause() instanceof ClassNotFoundException);
+        }
+    }
+
+    /**
+     * Test if OGNL can parse an expression involving a package with all of the possible valid identifier token names in it.
+     * 
+     * @throws Throwable 
+     */
+    public void test_nonexistent_package_with_all_valid_token_names() throws Throwable
+    {
+        try {
+            Node expr = (Node) Ognl.parseExpression("@test.or.and.bor.xor.band.eq.neq.lt.gt.lte.gte.in.not.shl.shr.ushr.true.false.null.BasicTest@generateId()");
+            Object obj = expr.getValue(_context, null);
+            fail("Was able to get a value for a package and class that does not exist ?");
+        } catch (MethodFailedException mfe) {
+            // Test would cause an ExpressionSyntaxException (cause ParseException) with older OGNL versions.
+            // With newer OGNL versions it will cause a MethodFailedException(cause ClassNotFoundException).
+            // The MethodFailedException is the expected/desired outcome now, as it demonstrates that package names that are also
+            // OGNL tokens can be parsed successfully to find classes.
+            assertTrue("Cause was not a ClassNotFoundException ?", mfe.getCause() instanceof ClassNotFoundException);
+        }
+    }
+
+    /**
+     * Test if OGNL can parse an expression involving a package with "or" starting it.
+     * 
+     * @throws Throwable 
+     */
+    public void test_nonexistent_package_starting_with_or_in_name() throws Throwable
+    {
+        try {
+            Node expr = (Node) Ognl.parseExpression("@or.BasicTest@generateId()");
+            fail("Was able to parse an expression whose package started with or ?");
+        } catch (ExpressionSyntaxException esex) {
+            // This test should cause an ExpressionSyntaxException (cause ParseException) with all OGNL versions.
+            assertTrue("Cause was not a ParseException ?", esex.getCause() instanceof ParseException);
+        }
+    }
 }

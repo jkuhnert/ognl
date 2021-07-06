@@ -300,6 +300,14 @@ expression is the right-most expression element.
 This will call `ensureLoaded()` on the root object, then get the name
 property of the root object as the result of the expression.
 
+### Limitations
+
+OGNL won't be able to process Java packages which match any of the token names,
+eg.: `or.mypackage.MyClass@someMethod` or `com.mypackage.or.MyClass@sometMethod`
+- in such cases `or` will be treated as an operator.
+
+See the list of operators below to understand possible implications.
+
 ## Collection Construction
 
 ### Lists
